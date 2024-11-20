@@ -10,7 +10,7 @@ print(rm.list_resources())
 
 x = [] # saving x-values for plotting graph
 y = [] # saving y-values for plotting graph
-z = [0,-1,-2,-3,-4,-5]
+# z = [0,-1,-2,-3,-4,-5]
 
 measure_inst = rm.open_resource('GPIB0::22::INSTR') # 34401
 dcSupply_inst = rm.open_resource('GPIB0::10::INSTR') # 8200
@@ -82,6 +82,7 @@ def fixed_vds():
     vgs_finalV = float(input('Vgs final voltage:'))
     vgs_diff = float(input('Vgs voltage difference in each step:'))
     vgs_iterations = int((vgs_finalV - vgs_startV)/vgs_diff + 1)
+    vds_value = float(input('Vds DC supply:'))
     delay_time = float(input('cooling time in each step:'))
     current_vgs = vgs_startV
     def delay(sec):
@@ -89,7 +90,10 @@ def fixed_vds():
         time.sleep(sec)
     def measure_delay():
         time.sleep(0.5)
-    dcSupply_inst.write('V1-%f' %(5/10.0)) # V1+0.1000 = 0.1x10^1 = 1V
+    if (vds_value >= 0):
+        dcSupply_inst.write('V1+%f' %(vds_value/10.0)) # V1+0.1000 = 0.1x10^1 = 1V
+    else:
+        dcSupply_inst.write('V1%f' %(vds_value/10.0)) # V1+0.1000 = 0.1x10^1 = 1V
     for i in range(vgs_iterations):
         inst_33120A.write('APPL:DC DEF, DEF, %s' %(str(current_vgs)))
 
@@ -128,15 +132,19 @@ def vds_test_with_diff_vgs():
 
     plt.legend() # to show the label indicators
 
-# vds_test_with_diff_vgs()
-
 def vgs_test_with_fixed_vds():
     fixed_vds()
     global x,y
     plt.plot(x,y)
     dcSupply_inst.write('V1+%f' %(0/10.0)) # V1+0.1000 = 0.1x10^1 = 1V
 
-vgs_test_with_fixed_vds()
+choice = int(input('Please select a test below\nVds test with diff Vgs (0)\nVgs test with fixed Vds (1)\ninput 0 or 1:'))
+if (choice == 0):
+    vds_test_with_diff_vgs()
+elif (choice == 1):
+    vgs_test_with_fixed_vds()
+else:
+    print('incorrect input')
 
 inst_33120A.write('APPL:DC DEF, DEF, +%s' %('0.0'))
 print('Done')
@@ -144,5 +152,9 @@ plt.xlabel('Voltage supply')
 plt.ylabel('current measured')
 plt.title('current against voltage measurement')
 # plt.legend() # to show the label indicators
-plt.savefig('-newtest_with_3s_cooldown_with_0.5s_measure_delay.png')
+saving_picture = input('save the picture? (y/N):')
+if (saving_picture == 'y'):
+    picture_name = input('picture name:')
+    picture_name += '.png'
+    plt.savefig(picture_name)
 plt.show()
