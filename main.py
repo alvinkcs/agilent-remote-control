@@ -3,6 +3,7 @@ import pyvisa
 import matplotlib.pyplot as plt
 import time
 import os
+import pyserial.espec
 # import visa
 rm = pyvisa.ResourceManager()
 print(rm)
@@ -77,13 +78,14 @@ def run_measurement(voltage):
 
     dcSupply_inst.write('V1+%f' %(0.0)) # change back to 0V for safety
 
-def fixed_vds():
-    vgs_startV = float(input('Vgs start voltage:'))
-    vgs_finalV = float(input('Vgs final voltage:'))
-    vgs_diff = float(input('Vgs voltage difference in each step:'))
+def fixed_vds(vgs_startV=0,vgs_finalV=0,vgs_diff=0,vds_value=0,delay_time=0):
+    if (vgs_startV == 0 and vgs_finalV == 0 and vgs_diff == 0 and vds_value ==0 and delay_time == 0):
+        vgs_startV = float(input('Vgs start voltage:'))
+        vgs_finalV = float(input('Vgs final voltage:'))
+        vgs_diff = float(input('Vgs voltage difference in each step:'))
+        vds_value = float(input('Vds DC supply:'))
+        delay_time = float(input('cooling time in each step:'))
     vgs_iterations = int((vgs_finalV - vgs_startV)/vgs_diff + 1)
-    vds_value = float(input('Vds DC supply:'))
-    delay_time = float(input('cooling time in each step:'))
     current_vgs = vgs_startV
     def delay(sec):
         inst_33120A.write('APPL:DC DEF, DEF, +%s' %(str(0.0)))
@@ -133,16 +135,40 @@ def vds_test_with_diff_vgs():
     plt.legend() # to show the label indicators
 
 def vgs_test_with_fixed_vds():
-    fixed_vds()
+    fixed_vds(vgs_startV=0,vgs_finalV=-5,vgs_diff=-0.1,vds_value=-5,delay_time=0.5)
     global x,y
     plt.plot(x,y)
     dcSupply_inst.write('V1+%f' %(0/10.0)) # V1+0.1000 = 0.1x10^1 = 1V
 
-choice = int(input('Please select a test below\nVds test with diff Vgs (0)\nVgs test with fixed Vds (1)\ninput 0 or 1:'))
+def integrated_test_with_temp(temp=20):
+    pyserial.espec.run_test(temp)
+    print('wait 1min')
+    time.sleep(60)
+    while (True):
+        result = (pyserial.espec.temp_monitor())
+        print(result)
+        result_arr = result.split(',')
+        if (abs(float(result_arr[0]) - float(result_arr[1])) <= 0.2):
+            break
+        else:
+            print('wait 30sec')
+            time.sleep(30)
+    print('starting vgs_test_with_fixed_vds')
+    vgs_test_with_fixed_vds()
+    global x,y
+    plt.plot(x,y, label = 'Temp = %f'%(temp))
+    x = []
+    y = []
+    plt.legend()
+
+choice = int(input('Please select a test below\nVds test with diff Vgs (0)\nVgs test with fixed Vds (1)\nTest with diff temp. (2)\ninput 0 or 1 or 2:'))
 if (choice == 0):
     vds_test_with_diff_vgs()
 elif (choice == 1):
     vgs_test_with_fixed_vds()
+elif (choice == 2):
+    integrated_test_with_temp(50)
+    integrated_test_with_temp(20)
 else:
     print('incorrect input')
 
