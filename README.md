@@ -1,4 +1,5 @@
-<h3>py3 is used in this tutorial. But python might work as well. Replace py as python.</h3>
+<h3>py3 is used in this tutorial. But python might work as well. Replace py as python if so.</h3>
+<a href='https://www.keysight.com/zz/en/lib/software-detail/computer-software/io-libraries-suite-downloads-2175637.html'>install agilent IO libraries suite and 82357 library suite</a>
 
 1. install python packages 
 ```

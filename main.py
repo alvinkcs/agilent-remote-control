@@ -41,7 +41,7 @@ delay_time = 0.0
 def vds_increment(voltage=0.0,startV=0.0,finalV=0.0,diff=0.0,delay_time=0.0):
 
     # voltage = current_vgs
-    if (voltage >= 0):
+    if (voltage >= 0.0):
         inst_33120A.write('APPL:DC DEF, DEF, +%s' %(str(voltage)))
         # print('APPL:DC DEF, DEF, +%s' %(str(voltage).ljust(9,'0')))
     else:
@@ -110,15 +110,6 @@ def fixed_vds(vgs_startV=0,vgs_finalV=0,vgs_diff=0,vds_value=0,delay_time=0):
         delay(delay_time)
 
 def vds_test_with_diff_vgs(temp=-273):
-    # global startV, finalV, diff, delay_time
-    # startV = float(input('Vds start voltage:'))
-    # finalV = float(input('Vds final voltage:'))
-    # diff = float(input('voltage difference in each step:'))
-    # delay_time = float(input('delay time in each for cooling down:'))
-
-    # vgs_startV = float(input('Vgs start voltage:'))
-    # vgs_finalV = float(input('Vgs final voltage:'))
-    # vgs_diff = float(input('Vgs voltage difference in each step:'))
     vgs_iterations = int((vgs_finalV - vgs_startV)/vgs_diff + 1)
     current_vgs = vgs_startV
     for j in range(vgs_iterations):
@@ -127,11 +118,12 @@ def vds_test_with_diff_vgs(temp=-273):
         if (temp == -273):
             plt.plot(x,y, label = 'Vgs = %iV'%(j))
         else:
-            plt.plot(x,y, label = 'Vgs = %iV with temp = %f'%(j,temp))
+            # plt.plot(x,y, label = 'Vgs = %iV with temp = %f'%(j,temp))
+            plt.plot(x,y, label = '%iV, %f'%(j,temp))
         x = []
         y = []
         current_vgs += vgs_diff
-
+    inst_33120A.write('APPL:DC DEF, DEF, +%s' %(str(0.0))) # set back to zero
     plt.legend() # to show the label indicators
 
 def vgs_test_with_fixed_vds(vgs_startV=0.0,vgs_finalV=0.0,vgs_diff=0.0,vds_value=0.0,delay_time=0.0):
@@ -148,7 +140,7 @@ def integrated_test_with_temp(temp=20,test_choice=0):
         result = (pyserial.espec.temp_monitor())
         print(result)
         result_arr = result.split(',')
-        if (abs(float(result_arr[0]) - float(result_arr[1])) <= 0.2):
+        if (abs(float(result_arr[0]) - float(result_arr[1])) <= 0.205): # for dealing with truncation
             break
         else:
             print('wait 30sec')
@@ -187,6 +179,8 @@ elif (choice == 1):
     plt.xlabel('VGS[V]')
 elif (choice == 2):
     test_choice = int(input('Please select a test with temp below\nVds test with diff Vgs (0)\nVgs test with fixed Vds (1)\ninput 0 or 1:'))
+    temps = input('Please input a series of temp that to be testing with space (format:80 50 20 -10):')
+    temps_arr = temps.split()
     if (test_choice == 0):
         startV = float(input('Vds start voltage:'))
         finalV = float(input('Vds final voltage:'))
@@ -196,8 +190,12 @@ elif (choice == 2):
         vgs_startV = float(input('Vgs start voltage:'))
         vgs_finalV = float(input('Vgs final voltage:'))
         vgs_diff = float(input('Vgs voltage difference in each step:'))
-        integrated_test_with_temp(50,test_choice)
-        integrated_test_with_temp(20,test_choice)
+        for temp in temps_arr:
+            integrated_test_with_temp(float(temp),test_choice)
+        # integrated_test_with_temp(80,test_choice)
+        # integrated_test_with_temp(50,test_choice)
+        # integrated_test_with_temp(20,test_choice)
+        # integrated_test_with_temp(-10,test_choice)
         plt.xlabel('VDS[V]')
     elif (test_choice == 1):
         vgs_startV = float(input('Vgs start voltage:'))
@@ -205,8 +203,12 @@ elif (choice == 2):
         vgs_diff = float(input('Vgs voltage difference in each step:'))
         vds_value = float(input('Vds voltage:'))
         delay_time = float(input('delay time in each step for cooling down:'))
-        integrated_test_with_temp(50,test_choice)
-        integrated_test_with_temp(20,test_choice)
+        for temp in temps_arr:
+            integrated_test_with_temp(float(temp),test_choice)
+        # integrated_test_with_temp(80,test_choice)
+        # integrated_test_with_temp(50,test_choice)
+        # integrated_test_with_temp(20,test_choice)
+        # integrated_test_with_temp(-10,test_choice)
         plt.xlabel('VGS[V]')
     else:
         print('incorrect input')
@@ -219,10 +221,9 @@ print('Done')
 plt.ylabel('ID[A]')
 plt.title('current against voltage measurement')
 # plt.legend() # to show the label indicators
-plt.show()
 saving_picture = input('save the picture? (y/N):')
-if (saving_picture == 'y'):
+if (saving_picture.lower() == 'y'):
     picture_name = input('picture name:')
     picture_name += '.png'
     plt.savefig(picture_name)
-# plt.show()
+plt.show()

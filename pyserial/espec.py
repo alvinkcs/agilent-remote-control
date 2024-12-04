@@ -1,6 +1,6 @@
 import serial
-import time
-ser = serial.Serial(port='COM4',
+# import time
+ser = serial.Serial(port='COM4', # if port is not COM4, change it accordingly
 baudrate=9600,
 timeout=3,
 parity=serial.PARITY_NONE,
@@ -16,7 +16,7 @@ def run_command():
         val = 0
         # command = '01, MODE, STANDBY'
         command = input('command input (type q to quit):')
-        if (command == 'q' or command =='Q'):
+        if (command.lower() == 'q'):
             break
         # command += str('\x0a')
         command += str('\r\n')
