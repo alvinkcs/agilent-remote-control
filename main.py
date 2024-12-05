@@ -148,7 +148,7 @@ def integrated_test_with_temp(temp=20,test_choice=0):
     global x,y
     if (test_choice == 0):
         print('starting vds_test_with_diff_vgs')
-        vds_test_with_diff_vgs()
+        vds_test_with_diff_vgs(temp)
     elif (test_choice == 1):
         print('starting vgs_test_with_fixed_vds')
         vgs_test_with_fixed_vds(vgs_startV,vgs_finalV,vgs_diff,vds_value,delay_time)
@@ -192,10 +192,6 @@ elif (choice == 2):
         vgs_diff = float(input('Vgs voltage difference in each step:'))
         for temp in temps_arr:
             integrated_test_with_temp(float(temp),test_choice)
-        # integrated_test_with_temp(80,test_choice)
-        # integrated_test_with_temp(50,test_choice)
-        # integrated_test_with_temp(20,test_choice)
-        # integrated_test_with_temp(-10,test_choice)
         plt.xlabel('VDS[V]')
     elif (test_choice == 1):
         vgs_startV = float(input('Vgs start voltage:'))
@@ -205,17 +201,13 @@ elif (choice == 2):
         delay_time = float(input('delay time in each step for cooling down:'))
         for temp in temps_arr:
             integrated_test_with_temp(float(temp),test_choice)
-        # integrated_test_with_temp(80,test_choice)
-        # integrated_test_with_temp(50,test_choice)
-        # integrated_test_with_temp(20,test_choice)
-        # integrated_test_with_temp(-10,test_choice)
         plt.xlabel('VGS[V]')
     else:
         print('incorrect input')
 else:
     print('incorrect input')
 
-inst_33120A.write('APPL:DC DEF, DEF, +%s' %('0.0'))
+inst_33120A.write('APPL:DC DEF, DEpy F, +%s' %('0.0'))
 print('Done')
 # plt.xlabel('VDS[V] or VGS[V]')
 plt.ylabel('ID[A]')
