@@ -1,6 +1,10 @@
 <h3>py is used in this tutorial. But python works as well. Replace py with python if so.</h3>
 <a href='https://www.keysight.com/zz/en/lib/software-detail/computer-software/io-libraries-suite-downloads-2175637.html'>install agilent IO libraries suite and 82357 library suite</a>
 
+Make sure you are in the correct directory. If not, use command cd to navigate the directory first.
+
+The following code will work in either cmd or VSCode(bash command prompt)
+
 1. install python packages 
 ```
 py -m pip install pyvisa pyserial matplotlib
@@ -10,6 +14,10 @@ or
 py -m pip install -r requirements.txt
 ```
 If python is used, then use the following command:
+```
+pip install pyvisa pyserial matplotlib
+```
+or
 ```
 pip install -r requirements.txt
 ```
