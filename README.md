@@ -1,6 +1,6 @@
 <a href='https://github.com/alvinkcs/agilent-remote-control'>Github reference</a>
 
-<h3>Both py or python work. Replace py with python if so.</h3>
+<h3>Both py or python work.</h3>
 <a href='https://www.keysight.com/zz/en/lib/software-detail/computer-software/io-libraries-suite-downloads-2175637.html'>install agilent IO libraries suite and 82357 library suite</a>
 
 <b>Make sure you are in the correct directory. If not, use command cd to navigate the directory first.</b>
@@ -31,11 +31,11 @@ py -m pip install -r requirements.txt
 2. choose the function by inputing integer
 (fixed Vgs or fixed Vds)
 ```
-py main.py
+python main.py
 ```
 or 
 ```
-python main.py
+py main.py
 ```
 Please input parameters in the correct format. If there is mistake in inputing parameters, use Ctrl+C to exit the programe.
 
