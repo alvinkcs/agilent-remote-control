@@ -1,7 +1,16 @@
+<a href='https://github.com/alvinkcs/agilent-remote-control'>Github reference</a>
+
 <h3>py is used in this tutorial. But python works as well. Replace py with python if so.</h3>
 <a href='https://www.keysight.com/zz/en/lib/software-detail/computer-software/io-libraries-suite-downloads-2175637.html'>install agilent IO libraries suite and 82357 library suite</a>
 
-Make sure you are in the correct directory. If not, use command cd to navigate the directory first.
+<b>Make sure you are in the correct directory. If not, use command cd to navigate the directory first.</b>
+```
+cd C:\Users\fillab\Desktop\agilent-remote-control-main\agilent-remote-control-main
+```
+
+Go to <b>Device Manager</b> and search the port number your USB is connected to. If it's <b>COM3</b>, change the line 3 of espec.py from pyserial folder as follows:
+
+ser = serial.Serial(port='COM3'
 
 The following code will work in either cmd or VSCode(bash command prompt)
 
