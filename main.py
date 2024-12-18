@@ -24,9 +24,11 @@ inst_33120A.write('*CLS')
 inst_33120A.write('OUTP:LOAD INF')
 inst_33120A.write('APPL:DC DEF, DEF, 0')
 
-txt_file_index = 1
-while (os.path.isfile('testrun%i.txt'%(txt_file_index)) == True):
-    txt_file_index += 1
+# txt_file_index = 1
+# while (os.path.isfile('testrun%i.txt'%(txt_file_index)) == True):
+#     txt_file_index += 1
+
+txt_file_name = input("Please input a txt file name (.txt is not needed):")
 
 # startV = 0
 # finalV = 0
@@ -60,7 +62,8 @@ def vds_increment(voltage=0.0,startV=0.0,finalV=0.0,diff=0.0,delay_time=0.0):
             dcSupply_inst.write('V1%f' %(currentV/10.0)) # V1-0.1000 = -0.1x10^1 = -1V
 
         # print('%f\t' %(currentV),measure_inst.query('MEAS?'))
-        with open('testrun%i.txt'%(txt_file_index), 'a') as file:
+        # with open('testrun%i.txt'%(txt_file_index), 'a') as file:
+        with open('%s.txt'%(txt_file_name), 'a') as file:
             # measure_value = measure_inst.query('MEAS:CURR:DC? DEF,DEF')
             measure_inst.write('TRIG:SOUR IMM')
             measure_value = measure_inst.query('READ?')
@@ -96,7 +99,8 @@ def fixed_vds(vgs_startV=0,vgs_finalV=0,vgs_diff=0,vds_value=0,delay_time=0):
     for i in range(vgs_iterations):
         inst_33120A.write('APPL:DC DEF, DEF, %s' %(str(current_vgs)))
 
-        with open('testrun%i.txt'%(txt_file_index), 'a') as file:
+        # with open('testrun%i.txt'%(txt_file_index), 'a') as file:
+        with open('%s.txt'%(txt_file_name), 'a') as file:
             # measure_value = measure_inst.query('MEAS:CURR:DC? DEF,DEF')
             measure_delay()
             measure_inst.write('TRIG:SOUR IMM')

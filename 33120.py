@@ -1,3 +1,4 @@
+# this is for setting the Vgs (33120A) alone
 import pyvisa
 import matplotlib.pyplot as plt
 # import visa
