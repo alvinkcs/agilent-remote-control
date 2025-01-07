@@ -1,6 +1,6 @@
 import serial
 # import time
-ser = serial.Serial(port='COM4', # if port is not COM4, change it accordingly
+ser = serial.Serial(port='COM3', # if port is not COM3, change it accordingly
 baudrate=9600,
 timeout=3,
 parity=serial.PARITY_NONE,
