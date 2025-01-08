@@ -16,7 +16,11 @@ dcSupply_inst = rm.open_resource('GPIB0::10::INSTR') # 8200
 measure_inst.write("*RST") # reset
 measure_inst.write('*CLS') # clear
 # measure_inst.write('CONF:CURR:DC DEF,DEF')
-measure_value = measure_inst.query('MEAS:CURR:DC? DEF,DEF')
+measure_choice = input('Measure Voltage[V] or Current[A] (input V or A):')
+if (measure_choice.lower() == 'a'):
+    measure_value = measure_inst.query('MEAS:CURR:DC? DEF,DEF')
+else:
+    measure_value = measure_inst.query('MEAS:VOLT:DC? DEF,DEF')
 
 inst_33120A = rm.open_resource('GPIB0::11::INSTR') # 33120A
 inst_33120A.write('*RST')
@@ -24,27 +28,15 @@ inst_33120A.write('*CLS')
 inst_33120A.write('OUTP:LOAD INF')
 inst_33120A.write('APPL:DC DEF, DEF, 0')
 
-# txt_file_index = 1
-# while (os.path.isfile('testrun%i.txt'%(txt_file_index)) == True):
+# txt_file_index = 1 # This is for automating the txt file naming
+# while (os.path.isfile('testrun%i.txt'%(txt_file_index)) == True): # checking if there is such file
 #     txt_file_index += 1
 
 txt_file_name = input("Please input a txt file name (.txt is not needed):")
 
 txt_label_arr = []
 
-# startV = 0
-# finalV = 0
-# diff = 0
-# delay_time = 0
-vgs_startV = 0.0
-vgs_finalV = 0.0
-vgs_diff = 0.0
-vds_value = 0.0
-delay_time = 0.0
-
-def vds_increment(arr,vgs_iteration,temp_iteration=0,voltage=0.0,startV=0.0,finalV=0.0,diff=0.0,delay_time=0.0):
-
-    # voltage = current_vgs
+def vds_increment(arr,vgs_iteration,temp_iteration=0,voltage=0.0):
     if (voltage >= 0.0):
         inst_33120A.write('APPL:DC DEF, DEF, +%s' %(str(voltage)))
         # print('APPL:DC DEF, DEF, +%s' %(str(voltage).ljust(9,'0')))
@@ -77,13 +69,7 @@ def vds_increment(arr,vgs_iteration,temp_iteration=0,voltage=0.0,startV=0.0,fina
 
     dcSupply_inst.write('V1+%f' %(0.0)) # change back to 0V for safety
 
-def fixed_vds(arr,temp_iteration=0,vgs_startV=0,vgs_finalV=0,vgs_diff=0,vds_value=0,delay_time=0):
-    if (vgs_startV == 0 and vgs_finalV == 0 and vgs_diff == 0 and vds_value == 0 and delay_time == 0):
-        vgs_startV = float(input('Vgs start voltage:'))
-        vgs_finalV = float(input('Vgs final voltage:'))
-        vgs_diff = float(input('Vgs voltage difference in each step:'))
-        vds_value = float(input('Vds DC supply:'))
-        delay_time = float(input('cooling time in each step:'))
+def vgs_increment(arr,temp_iteration=0):
     vgs_iterations = int((vgs_finalV - vgs_startV)/vgs_diff + 1)
     current_vgs = vgs_startV
     def delay(sec):
@@ -114,15 +100,13 @@ def vds_test_with_diff_vgs(arr,temp=-273,temp_iteration=0):
     vgs_iterations = int((vgs_finalV - vgs_startV)/vgs_diff + 1)
     current_vgs = vgs_startV
     for j in range(vgs_iterations):
-        vds_increment(arr,vgs_iteration=j,temp_iteration=temp_iteration, voltage=current_vgs, startV=startV, finalV=finalV, diff=diff, delay_time=delay_time)
-        global x,y
+        vds_increment(arr,vgs_iteration=j,temp_iteration=temp_iteration, voltage=current_vgs)
         if (temp == -273):
             plt.plot(x,y, label = 'Vgs = %iV'%(current_vgs))
-            txt_label_arr.append("%fV"%(current_vgs))
+            txt_label_arr.append("Vgs=%fV"%(current_vgs))
         else:
-            # plt.plot(x,y, label = 'Vgs = %iV with temp = %f'%(j,temp))
             plt.plot(x,y, label = '%iV, %f'%(current_vgs,temp))
-            txt_label_arr.append("%.2fV,Temp=%i"%(current_vgs,temp))
+            txt_label_arr.append("Vgs=%.2fV,Temp=%i"%(current_vgs,temp))
         x = []
         y = []
         current_vgs += vgs_diff
@@ -130,11 +114,13 @@ def vds_test_with_diff_vgs(arr,temp=-273,temp_iteration=0):
     inst_33120A.write('APPL:DC DEF, DEF, +%s' %(str(0.0))) # set back to zero
     plt.legend() # to show the label indicators
 
-def vgs_test_with_fixed_vds(arr,temp=-273,temp_iteration=0,vgs_startV=0.0,vgs_finalV=0.0,vgs_diff=0.0,vds_value=0.0,delay_time=0.0):
+def vgs_test_with_fixed_vds(arr,temp=-273,temp_iteration=0):
     global x,y
-    fixed_vds(arr=arr,temp_iteration=temp_iteration,vgs_startV=vgs_startV,vgs_finalV=vgs_finalV,vgs_diff=vgs_diff,vds_value=vds_value,delay_time=delay_time)
+    vgs_increment(arr=arr,temp_iteration=temp_iteration)
     if (temp != -273):
-        txt_label_arr.append("Temp=%i"%(temp))
+        txt_label_arr.append("Vds=%fV,Temp=%i"%(vds_value,temp))
+    else:
+        txt_label_arr.append("Vds=%fV"%(vds_value))
     plt.plot(x,y)
     dcSupply_inst.write('V1+%f' %(0/10.0)) # V1+0.1000 = 0.1x10^1 = 1V
     inst_33120A.write('APPL:DC DEF, DEF, +%s' %(str(0.0))) # set back to zero
@@ -158,7 +144,7 @@ def integrated_test_with_temp(arr,temp=20,test_choice=0,temp_iteration=0):
         vds_test_with_diff_vgs(arr,temp=temp,temp_iteration=temp_iteration)
     elif (test_choice == 1):
         print('starting vgs_test_with_fixed_vds')
-        vgs_test_with_fixed_vds(arr,temp=temp,temp_iteration=temp_iteration,vgs_startV=vgs_startV,vgs_finalV=vgs_finalV,vgs_diff=vgs_diff,vds_value=vds_value,delay_time=delay_time)
+        vgs_test_with_fixed_vds(arr,temp=temp,temp_iteration=temp_iteration)
         plt.plot(x,y, label = 'Temp = %f'%(temp))
     x = []
     y = []
@@ -169,18 +155,20 @@ if (choice == 0):
     startV = float(input('Vds start voltage:'))
     finalV = float(input('Vds final voltage:'))
     diff = float(input('voltage difference in each step:'))
+    if (diff == 0):
+        print('diff cant be zero')
+        exit()
 
     row_of_array_for_txtfile = int((finalV-startV)/diff+1)
     
     delay_time = float(input('delay time in each for cooling down:'))
-
     vgs_startV = float(input('Vgs start voltage:'))
     vgs_finalV = float(input('Vgs final voltage:'))
     vgs_diff = float(input('Vgs voltage difference in each step:'))
 
     col_of_array_for_txtfile = int((vgs_finalV-vgs_startV)/vgs_diff+1)+1
 
-    array_for_txtfile = [[0.0 for x in range(col_of_array_for_txtfile)] for y in range(row_of_array_for_txtfile)]
+    array_for_txtfile = [[0 for x in range(col_of_array_for_txtfile)] for y in range(row_of_array_for_txtfile)] # for creating 2D array
 
     vds_test_with_diff_vgs(arr=array_for_txtfile)
     plt.xlabel('VDS[V]')
@@ -188,6 +176,9 @@ elif (choice == 1):
     vgs_startV = float(input('Vgs start voltage:'))
     vgs_finalV = float(input('Vgs final voltage:'))
     vgs_diff = float(input('Vgs voltage difference in each step:'))
+    if (vgs_diff == 0):
+        print('diff cant be zero')
+        exit()
 
     row_of_array_for_txtfile = int((vgs_finalV-vgs_startV)/vgs_diff+1)
     col_of_array_for_txtfile = 2
@@ -195,7 +186,7 @@ elif (choice == 1):
 
     vds_value = float(input('Vds voltage:'))
     delay_time = float(input('delay time in each step for cooling down:'))
-    vgs_test_with_fixed_vds(arr=array_for_txtfile,vgs_startV=vgs_startV,vgs_finalV=vgs_finalV,vgs_diff=vgs_diff,vds_value=vds_value,delay_time=delay_time)
+    vgs_test_with_fixed_vds(arr=array_for_txtfile)
     plt.xlabel('VGS[V]')
 elif (choice == 2):
     test_choice = int(input('Please select a test with temp below\nVds test with diff Vgs (0)\nVgs test with fixed Vds (1)\ninput 0 or 1:'))
@@ -205,11 +196,13 @@ elif (choice == 2):
         startV = float(input('Vds start voltage:'))
         finalV = float(input('Vds final voltage:'))
         diff = float(input('voltage difference in each step:'))
+        if (diff == 0):
+            print('diff cant be zero')
+            exit()
 
         row_of_array_for_txtfile = int((finalV-startV)/diff+1)
 
         delay_time = float(input('delay time in each for cooling down:'))
-
         vgs_startV = float(input('Vgs start voltage:'))
         vgs_finalV = float(input('Vgs final voltage:'))
         vgs_diff = float(input('Vgs voltage difference in each step:'))
@@ -227,11 +220,12 @@ elif (choice == 2):
         vgs_startV = float(input('Vgs start voltage:'))
         vgs_finalV = float(input('Vgs final voltage:'))
         vgs_diff = float(input('Vgs voltage difference in each step:'))
+        if (vgs_diff == 0):
+            print('diff cant be zero')
+            exit()
 
         row_of_array_for_txtfile = int((vgs_finalV-vgs_startV)/vgs_diff+1)
-
         col_of_array_for_txtfile = len(temps_arr)+1
-
         array_for_txtfile = [[0 for x in range(col_of_array_for_txtfile)] for y in range(row_of_array_for_txtfile)]
 
         vds_value = float(input('Vds voltage:'))
