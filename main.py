@@ -28,10 +28,6 @@ inst_33120A.write('*CLS')
 inst_33120A.write('OUTP:LOAD INF')
 inst_33120A.write('APPL:DC DEF, DEF, 0')
 
-# txt_file_index = 1 # This is for automating the txt file naming
-# while (os.path.isfile('testrun%i.txt'%(txt_file_index)) == True): # checking if there is such file
-#     txt_file_index += 1
-
 txt_file_name = input("Please input a txt file name (.txt is not needed):")
 
 txt_label_arr = []
@@ -103,7 +99,7 @@ def vds_test_with_diff_vgs(arr,temp=-273,temp_iteration=0):
         vds_increment(arr,vgs_iteration=j,temp_iteration=temp_iteration, voltage=current_vgs)
         if (temp == -273):
             plt.plot(x,y, label = 'Vgs = %iV'%(current_vgs))
-            txt_label_arr.append("Vgs=%fV"%(current_vgs))
+            txt_label_arr.append("Vgs=%.2fV"%(current_vgs))
         else:
             plt.plot(x,y, label = '%iV, %f'%(current_vgs,temp))
             txt_label_arr.append("Vgs=%.2fV,Temp=%i"%(current_vgs,temp))
@@ -118,9 +114,9 @@ def vgs_test_with_fixed_vds(arr,temp=-273,temp_iteration=0):
     global x,y
     vgs_increment(arr=arr,temp_iteration=temp_iteration)
     if (temp != -273):
-        txt_label_arr.append("Vds=%fV,Temp=%i"%(vds_value,temp))
+        txt_label_arr.append("Vds=%.2fV,Temp=%i"%(vds_value,temp))
     else:
-        txt_label_arr.append("Vds=%fV"%(vds_value))
+        txt_label_arr.append("Vds=%.2fV"%(vds_value))
     plt.plot(x,y)
     dcSupply_inst.write('V1+%f' %(0/10.0)) # V1+0.1000 = 0.1x10^1 = 1V
     inst_33120A.write('APPL:DC DEF, DEF, +%s' %(str(0.0))) # set back to zero
@@ -158,6 +154,9 @@ if (choice == 0):
     if (diff == 0):
         print('diff cant be zero')
         exit()
+    if ((finalV-startV)/diff < 0):
+        print('input error: infinite steps')
+        exit()
 
     row_of_array_for_txtfile = int((finalV-startV)/diff+1)
     
@@ -165,6 +164,12 @@ if (choice == 0):
     vgs_startV = float(input('Vgs start voltage:'))
     vgs_finalV = float(input('Vgs final voltage:'))
     vgs_diff = float(input('Vgs voltage difference in each step:'))
+    if (vgs_diff == 0):
+        print('diff cant be zero')
+        exit()
+    if ((vgs_finalV-vgs_startV)/vgs_diff):
+        print('input error: infinite steps')
+        exit()
 
     col_of_array_for_txtfile = int((vgs_finalV-vgs_startV)/vgs_diff+1)+1
 
@@ -178,6 +183,9 @@ elif (choice == 1):
     vgs_diff = float(input('Vgs voltage difference in each step:'))
     if (vgs_diff == 0):
         print('diff cant be zero')
+        exit()
+    if ((vgs_finalV-vgs_startV)/vgs_diff):
+        print('input error: infinite steps')
         exit()
 
     row_of_array_for_txtfile = int((vgs_finalV-vgs_startV)/vgs_diff+1)
@@ -199,6 +207,9 @@ elif (choice == 2):
         if (diff == 0):
             print('diff cant be zero')
             exit()
+        if ((finalV-startV)/diff < 0):
+            print('input error: infinite steps')
+            exit()
 
         row_of_array_for_txtfile = int((finalV-startV)/diff+1)
 
@@ -206,6 +217,12 @@ elif (choice == 2):
         vgs_startV = float(input('Vgs start voltage:'))
         vgs_finalV = float(input('Vgs final voltage:'))
         vgs_diff = float(input('Vgs voltage difference in each step:'))
+        if (vgs_diff == 0):
+            print('diff cant be zero')
+            exit()
+        if ((vgs_finalV-vgs_startV)/vgs_diff):
+            print('input error: infinite steps')
+            exit()
 
         col_of_array_for_txtfile = int((vgs_finalV-vgs_startV)/vgs_diff+1)*len(temps_arr)+1
 
@@ -222,6 +239,9 @@ elif (choice == 2):
         vgs_diff = float(input('Vgs voltage difference in each step:'))
         if (vgs_diff == 0):
             print('diff cant be zero')
+            exit()
+        if ((vgs_finalV-vgs_startV)/vgs_diff):
+            print('input error: infinite steps')
             exit()
 
         row_of_array_for_txtfile = int((vgs_finalV-vgs_startV)/vgs_diff+1)
@@ -255,7 +275,6 @@ with open('%s.txt'%(txt_file_name), 'a') as file:
 
 inst_33120A.write('APPL:DC DEF, DEpy F, +%s' %('0.0'))
 print('Done')
-# plt.xlabel('VDS[V] or VGS[V]')
 plt.ylabel('ID[A]')
 plt.title('current against voltage measurement')
 # plt.legend() # to show the label indicators
